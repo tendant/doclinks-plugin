@@ -88,12 +88,22 @@ public class DocLinksPublisher extends Recorder {
 
         final FilePath ws = build.getWorkspace();
         final FilePath docLinksDir = new FilePath(getDocLinksDir(build.getProject()));
+        final FilePath buildLinksDir = new FilePath(build.getRootDir());
+
+        // publishing doc for build
+        final Map<String, Document> map = new LinkedHashMap<String, Document>();
+        for (final Document doc : documents) {
+            map.put(doc.getId(), doc);
+            build.getActions().add(new DocLinksBuildAction(build.getProject(), build, doc));
+        }
+        
 
         try {
             synchronized (this) {
                 docLinksDir.deleteRecursive();
                 for (final Document doc : documents) {
                     doc.publish(ws, docLinksDir, logger);
+                    doc.publish(ws, buildLinksDir, logger);
                 }
             }
         } catch (final IOException e) {
